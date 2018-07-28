@@ -1,4 +1,5 @@
 ﻿using Common.UnitilyModel;
+using Common.Util;
 using Common.ViewModel;
 using DAL.Models;
 using DAL.Repository;
@@ -54,7 +55,7 @@ namespace Business.BusinessProviders
                     NationalID = model.AssignedPerson.NationalID,
                     PersonName = model.AssignedPerson.PersonName
                 },
-                CheckOutDate = model.CheckOutDate,
+                CheckOutDate = model.CheckOutDate.Value,
                 CheckInDate = model.CheckInDate
             };
             unitOfWork.BookAssignationRepository.Insert(bookAssignation);
@@ -64,6 +65,66 @@ namespace Business.BusinessProviders
             unitOfWork.BookRepository.Update(bookEntity);
 
             unitOfWork.Save();
+        }
+
+        public void AddCheckIn(BookCheckInVIewModel model)
+        {
+            var bookEntity = unitOfWork.BookRepository.GetByID(model.BoookID);
+            var lastBookAssignation = unitOfWork.BookAssignationRepository.GetByID(model.AssinationID);
+
+            if(bookEntity.CheckInCheckOut == Common.Enum.CheckInOutStatus.CheckedIn)
+            {
+                throw new Exception("Book is already checked in.");
+            }
+
+            bookEntity.CheckInCheckOut = Common.Enum.CheckInOutStatus.CheckedIn;
+            lastBookAssignation.CheckInDate = model.ActualReturnDate;
+
+            unitOfWork.BookRepository.Update(bookEntity);
+            unitOfWork.BookAssignationRepository.Update(lastBookAssignation);
+            unitOfWork.Save();
+        }
+
+        public BookCheckInVIewModel GetCheckInViewModel(int bookID)
+        {
+            var bookEntity = unitOfWork.BookRepository.GetByID(bookID);
+
+            var lastBookAssignation = unitOfWork.BookAssignationRepository.Get(null, null, "AssignedPerson")
+                .Where(x => x.BookID == bookID)
+                .OrderByDescending(x => x.CheckOutDate).FirstOrDefault();
+
+
+            BookCheckInVIewModel model = new BookCheckInVIewModel()
+            {
+                BoookID = bookID,
+                AssinationID = lastBookAssignation.ID,
+                ActualReturnDate = DateTime.Now,
+                AssignedPerson = new AssignedPersonViewModel()
+                {
+                    MobileNumber = lastBookAssignation.AssignedPerson.MobileNumber,
+                    NationalID = lastBookAssignation.AssignedPerson.NationalID,
+                    PersonName = lastBookAssignation.AssignedPerson.PersonName
+                },
+                RequiredReturnDate = lastBookAssignation.CheckOutDate,
+                Penality = calculatePanelity(lastBookAssignation.CheckOutDate)
+            };
+
+            return model;
+        }
+
+        private decimal calculatePanelity(DateTime checkOutDate)
+        {
+            BusinessDaysCalculator businessDaysCalculator = new BusinessDaysCalculator();
+            
+            int exceedDays = businessDaysCalculator.GetBusinessDaysBetweenCount(checkOutDate, DateTime.Now);
+            if (exceedDays > 0)
+            {
+                return 5 * exceedDays;
+            }
+            else
+            {
+                return decimal.Zero;
+            }
         }
 
         public List<BookViewModel> GetDataFromDbase(string searchBy, int take, int skip, string sortBy, bool sortDir, out int filteredResultsCount, out int totalResultsCount)
@@ -153,7 +214,7 @@ namespace Business.BusinessProviders
                         CheckInOutStatus = bookEntity.CheckInCheckOut.HasValue ? bookEntity.CheckInCheckOut.ToString() : "None",
                         CoverPrice = bookEntity.CoverPrice,
                         PublishYear = bookEntity.PublishDate.Year,
-                        CurrentAssignedPerson = bookEntity.BookAssignations.Where(x => !x.CheckOutDate.HasValue).OrderByDescending(x => x.CheckInDate)
+                        CurrentAssignedPerson = bookEntity.BookAssignations.Where(x => !x.CheckInDate.HasValue).OrderByDescending(x => x.CheckInDate)
                                         .Select(y => new AssignedPersonViewModel
                                         {
                                             MobileNumber = y.AssignedPerson.MobileNumber,
@@ -169,7 +230,7 @@ namespace Business.BusinessProviders
                                                 NationalID = z.AssignedPerson.NationalID,
                                                 PersonName = z.AssignedPerson.PersonName
                                             },
-                                            CheckInDate = z.CheckInDate,
+                                            CheckInDate = z.CheckInDate.GetValueOrDefault(),
                                             CheckOutDate = z.CheckOutDate
                                         }).ToList()
                     };

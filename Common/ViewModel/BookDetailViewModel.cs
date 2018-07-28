@@ -8,6 +8,7 @@ namespace Common.ViewModel
 {
     public class BookDetailViewModel : BookViewModel
     {
+
         public AssignedPersonViewModel CurrentAssignedPerson { get; set; }
         public List<BookAssinationViewModel> BookAssignationHistory { get; set; }
     }

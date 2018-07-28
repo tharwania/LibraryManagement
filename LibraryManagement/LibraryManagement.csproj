@@ -507,6 +507,7 @@
     <Content Include="Views\Book\_BookAssignmentHistory.cshtml" />
     <Content Include="Views\Book\CheckOut.cshtml" />
     <Content Include="Views\Book\_AssignedPersonAdd.cshtml" />
+    <Content Include="Views\Book\CheckIn.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

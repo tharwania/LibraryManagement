@@ -104,7 +104,7 @@
         });
 
         function checkInBook() {
-            console.log(selectedBook);
+            window.location.href = '@Url.Action("CheckIn", "Book")/' + selectedBook;
         }
         function checkOutBook() {
              window.location.href = '@Url.Action("CheckOut", "Book")/' + selectedBook;
