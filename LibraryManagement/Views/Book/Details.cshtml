@@ -1,0 +1,78 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@model Common.ViewModel.BookDetailViewModel
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Book</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.BookTitle)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BookTitle)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PublishYear)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PublishYear)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ISBN)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ISBN)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CoverPrice)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CoverPrice)
+        </dd>
+
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CheckInOutStatus)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CheckInOutStatus)
+        </dd>
+        @if (Model.CurrentAssignedPerson != null)
+        {
+        <dt>
+            @Html.DisplayNameFor(model => model.CurrentAssignedPerson)
+        </dt>
+        <dd>
+            @Html.Partial("_AssignedPersonView", Model.CurrentAssignedPerson)
+        </dd>
+        }
+    </dl>
+    @if (Model.BookAssignationHistory != null && Model.BookAssignationHistory.Count > 0)
+    {
+    <div>
+        <h5>Assigned History</h5>
+        @Html.Partial("_BookAssignmentHistory", Model.BookAssignationHistory);
+    </div>
+    }
+</div>
+<p>
+    @Html.ActionLink("Back to List", "Index", "Home");
+</p>

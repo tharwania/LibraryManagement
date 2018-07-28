@@ -1,0 +1,28 @@
+﻿@model IEnumerable<Common.ViewModel.BookAssinationViewModel>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.CheckInDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CheckOutDate)
+        </th>
+        <th>@Html.DisplayNameFor(model => model.AssignedPerson)</th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.CheckInDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CheckOutDate)
+        </td>
+        <td>
+            @Html.Partial("_AssignedPersonView", item.AssignedPerson)
+        </td>
+    </tr>
+}
+
+</table>

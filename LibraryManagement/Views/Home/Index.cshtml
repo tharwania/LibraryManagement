@@ -1,0 +1,121 @@
+﻿@{
+    ViewBag.Title = "Home";
+}
+
+@Styles.Render("~/Content/DataTables/css")
+
+<div class="page-header">
+    <h1>Books</h1>
+    <p class="lead">Manage books, check-out and maintain record of recovery as check-ins.</p>
+</div>
+<div class="row">
+    <table id="booksTable" class="table">
+        <thead>
+            <tr>
+                <th>Book ID</th>
+                <th>Book Title</th>
+                <th>ISBN</th>
+                <th>Publish Year</th>
+                <th>Cover Prize</th>
+                <th>Check in / check out status</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Book ID</th>
+                <th>Book Title</th>
+                <th>ISBN</th>
+                <th>Publish Year</th>
+                <th>Cover Prize</th>
+                <th>Check in / check out status</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<div class="row">
+    <div class="container">
+        <button id="checkIn" onclick="checkInBook()" class="btn btn-primary">Check In</button>
+        <button id="checkOut" onclick="checkOutBook()" class="btn btn-primary">Check Out</button>
+        <button id="details" onclick="bookDetails()" class="btn btn-primary">Details</button>
+    </div>
+</div>
+
+
+
+@section scripts {
+
+    <script type="text/javascript">
+        var selectedBook;
+        $(document).ready(function () {
+            $("#details,#checkIn,#checkOut").attr('disabled', "disabled");
+            var table = $('#booksTable').DataTable({
+                "proccessing": true,
+                "serverSide": true,
+                "pageLength": 25,
+                "ajax": {
+                    url: "@Url.Action("CustomServerSideSearchAction", "Home")",
+                    type: 'POST'
+                },
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search Book Title, ISBN"
+                },
+                "columns": [
+                    { "data": "BookID" },
+                    { "data": "BookTitle" },
+                    { "data": "ISBN" },
+                    { "data": "PublishYear" },
+                    { "data": "CoverPrice" },
+                    { "data": "CheckInOutStatus" }
+                ],
+                "columnDefs": [
+                    {
+                        "targets": [0],
+                        "visible": false,
+                    },
+                ]
+            });
+
+            $('#booksTable tbody').on('click', 'tr', function () {
+                
+                if ($(this).hasClass('success')) {
+                    $(this).removeClass('success');
+                    $("#details,#checkIn,#checkOut").attr('disabled', "disabled");
+                    selectedBook = undefined;
+                }
+                else {
+                    $("#details,#checkIn,#checkOut").attr('disabled', "disabled");
+                    table.$('tr.success').removeClass('success');
+                    $(this).addClass('success');
+                    
+                    $("#details").removeAttr('disabled');
+                    var tableRowData = table.row(this).data();
+                    selectedBook = tableRowData.BookID;
+                    var bookStatus = tableRowData.CheckInOutStatus;
+                    debugger;
+                    if (bookStatus == "None" || bookStatus == "CheckedIn") {
+                        $("#checkOut").removeAttr('disabled');
+                    }
+                    else if (bookStatus == "CheckedOut") {
+                        $("#checkIn").removeAttr('disabled');
+                    }
+                }
+            });
+        });
+
+        function checkInBook() {
+            console.log(selectedBook);
+        }
+        function checkOutBook() {
+             window.location.href = '@Url.Action("CheckOut", "Book")/' + selectedBook;
+        }
+        function bookDetails() {
+            console.log(selectedBook);
+            window.location.href = '@Url.Action("Details", "Book")/' + selectedBook;
+        }
+
+    </script>
+
+}
+
+
